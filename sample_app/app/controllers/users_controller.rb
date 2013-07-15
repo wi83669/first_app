@@ -4,7 +4,26 @@ class UsersController < ApplicationController
 	before_filter :admin_user, only: :destroy
   
 	def new
-		@user = User.new
+		if current_user != nil
+			redirect_to(root_path)
+		else
+			@user = User.new
+		end
+  end
+
+	def create
+		if current_user != nil
+			redirect_to(root_path)
+		else
+		  @user = User.new(params[:user])
+		  if @user.save
+		    sign_in @user
+		    flash[:success] = "Welcome to the Sample App!"
+			    redirect_to @user
+		  else
+		    render 'new'
+		  end
+		end
   end
 
 	def destroy
@@ -19,17 +38,6 @@ class UsersController < ApplicationController
 
 	def index
     @users = User.paginate(page: params[:page])
-  end
-
-	def create
-    @user = User.new(params[:user])
-    if @user.save
-      sign_in @user
-      flash[:success] = "Welcome to the Sample App!"
-	      redirect_to @user
-    else
-      render 'new'
-    end
   end
 
 	def edit
