@@ -15,7 +15,6 @@ class User < ActiveRecord::Base
 	has_many :relationships, foreign_key: "follower_id", dependent: :destroy
 	has_many :followed_users, through: :relationships, source: :followed
 
-
 	has_many :reverse_relationships, foreign_key: "followed_id",
                                    class_name:  "Relationship",
                                    dependent:   :destroy
@@ -34,8 +33,12 @@ class User < ActiveRecord::Base
   validates :password_confirmation, presence: true
 
   def feed
-    # This is preliminary. See "Following users" for the full implementation.
-    Micropost.where("user_id = ?", id)
+    Micropost.from_users_followed_by(self)
+  end
+
+	def self.from_users_followed_by(user)
+    followed_user_ids = user.followed_user_ids
+    where("user_id IN (?) OR user_id = ?", followed_user_ids, user)
   end
 	
 	def following?(other_user)

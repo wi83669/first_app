@@ -38,7 +38,7 @@ class UsersController < ApplicationController
   end
 
 	def index
-    @users = User.paginate(page: params[:page])
+    @users = User.paginate(page: params[:page], per_page: 5)
   end
 
 	def edit
@@ -56,14 +56,24 @@ class UsersController < ApplicationController
 		end
 	end
 
+	def following
+    @title = "Following"
+    @user = User.find(params[:id])
+    @users = @user.followed_users.paginate(page: params[:page])
+    render 'show_follow'
+  end
+
+  def followers
+    @title = "Followers"
+    @user = User.find(params[:id])
+    @users = @user.followers.paginate(page: params[:page])
+    render 'show_follow'
+  end
+
 	private
 		def admin_user
       redirect_to(root_path) unless current_user.admin?
     end
-
-		def signed_in_user
-			redirect_to signin_url, notice: "Please sign in." unless signed_in?
-		end
 
 		def correct_user
 			@user = User.find(params[:id])
